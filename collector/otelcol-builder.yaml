@@ -1,0 +1,24 @@
+dist:
+  name: otelcol-dev
+  description: Basic OTel Collector distribution for Developers
+  output_path: ./otelcol-dev
+  otelcol_version: 0.81.0
+
+exporters:
+  - gomod:
+      go.opentelemetry.io/collector/exporter/loggingexporter v0.81.0
+  - gomod:
+      go.opentelemetry.io/collector/exporter/otlpexporter v0.81.0
+
+processors:
+  - gomod:
+      go.opentelemetry.io/collector/processor/batchprocessor v0.81.0
+  - gomod:
+      github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor v0.82.0
+  - gomod:
+      github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.82.0
+
+receivers:
+  - gomod: "github.com/lightstep/without-a-trace/collector/k8snetlogreceiver v0.0.1"
+    name: "k8snetlogreceiver"
+    path: "./components/k8snetlogreceiver"

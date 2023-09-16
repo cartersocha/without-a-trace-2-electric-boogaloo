@@ -1,0 +1,192 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: without-a-trace-serviceaccount
+  namespace: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otelcol-config
+data:
+  otel-config: |
+    receivers:
+      k8snetlogreceiver:
+        collection_interval: 5s
+
+    processors:
+      batch:
+      resource/client:
+        attributes:
+          - key: k8s.pod.ip
+            from_attribute: client.socket.address
+            action: insert
+      k8sattributes/client:
+        # TODO: should this be filtered to a node?
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+        extract:
+          metadata:
+            - k8s.namespace.name
+          labels:
+            - tag_name: service.name
+              key: app.kubernetes.io/name
+              from: pod
+      resource/client-rename:
+        attributes:
+        - key: client.service.name
+          from_attribute: service.name
+          action: insert
+        - key: service.name
+          action: delete
+        - key: k8s.pod.ip
+          action: delete
+      resource/server:
+        attributes:
+          - key: k8s.pod.ip
+            from_attribute: server.socket.address
+            action: insert
+      k8sattributes/server:
+        # TODO: should this be filtered to a node?
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+        extract:
+          metadata:
+            - k8s.namespace.name
+          labels:
+            - tag_name: service.name
+              key: app.kubernetes.io/name
+              from: pod
+      resource/server-rename:
+        attributes:
+        - key: server.service.name
+          from_attribute: service.name
+          action: insert
+        - key: service.name
+          action: delete
+        - key: k8s.pod.ip
+          action: delete
+    exporters:
+      logging:
+        verbosity: detailed
+      otlp:
+        endpoint: ingest.lightstep.com:443
+        headers:
+          "lightstep-access-token": "${LS_ACCESS_TOKEN}"
+
+    service:
+      telemetry:
+        logs:
+          level: "debug"
+      pipelines:
+        metrics:
+          receivers: [k8snetlogreceiver]
+          processors: 
+            - resource/client
+            - k8sattributes/client
+            - resource/client-rename
+            - resource/server
+            - k8sattributes/server
+            - resource/server-rename
+            - batch
+          exporters: [logging, otlp]
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: without-a-trace-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: without-a-trace-daemonset
+  template:
+    metadata:
+      labels:
+        app: without-a-trace-daemonset
+    spec:
+      serviceAccountName: without-a-trace-serviceaccount
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
+      containers:
+      - name: without-a-trace-daemonset
+        image: "ghcr.io/lightstep/without-a-trace:main"
+        imagePullPolicy: Always
+        env:
+          - name: KUBE_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: LS_ACCESS_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: LS_TOKEN
+                name: without-a-trace-secret
+        volumeMounts:
+          # needed to read network traffic
+          - mountPath: /hostproc
+            name: proc
+            readOnly: true
+          # otel collector config
+          - mountPath: /etc/otelcol/config.yaml
+            name: otelcol-config
+            subPath: otel-config
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      volumes:
+        - hostPath:
+            path: /proc
+            type: ""
+          name: proc
+        - name: otelcol-config
+          configMap:
+            name: otelcol-config
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: without-a-trace-daemonset
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources:
+    - events
+    - namespaces
+    - namespaces/status
+    - nodes
+    - nodes/spec
+    - nodes/stats
+    - nodes/proxy
+    - pods
+    - pods/status
+    - replicationcontrollers
+    - replicationcontrollers/status
+    - resourcequotas
+    - services
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+    - apps
+  resources:
+    - daemonsets
+    - deployments
+    - replicasets
+    - statefulsets
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: without-a-trace-daemonset
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: without-a-trace-daemonset
+subjects:
+- kind: ServiceAccount
+  name: without-a-trace-serviceaccount
+  namespace: default

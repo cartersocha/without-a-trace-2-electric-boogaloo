@@ -1,0 +1,77 @@
+konnectivity-agent in namespace kube-system calls:
+  - coredns in namespace kube-system
+  - metrics-server in namespace kube-system
+  - opentelemetry-operator in namespace default
+kube-otel-stack-metrics in namespace default calls:
+  - coredns in namespace kube-system
+  - kube-otel-stack-kube-state-metrics in namespace default
+  - kube-otel-stack-metrics in namespace default
+  - kube-otel-stack-traces in namespace default
+  - opentelemetry-operator in namespace default
+my-otel-demo-accountingservice in namespace default calls:
+  - my-otel-demo-kafka in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-adservice in namespace default calls:
+  - my-otel-demo-featureflagservice in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-cartservice in namespace default calls:
+  - my-otel-demo-otelcol in namespace default
+  - my-otel-demo-redis in namespace default
+my-otel-demo-checkoutservice in namespace default calls:
+  - my-otel-demo-cartservice in namespace default
+  - my-otel-demo-currencyservice in namespace default
+  - my-otel-demo-emailservice in namespace default
+  - my-otel-demo-kafka in namespace default
+  - my-otel-demo-otelcol in namespace default
+  - my-otel-demo-paymentservice in namespace default
+  - my-otel-demo-productcatalogservice in namespace default
+  - my-otel-demo-shippingservice in namespace default
+my-otel-demo-currencyservice in namespace default calls:
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-emailservice in namespace default calls:
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-featureflagservice in namespace default calls:
+  - my-otel-demo-ffspostgres in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-frauddetectionservice in namespace default calls:
+  - my-otel-demo-kafka in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-frontend in namespace default calls:
+  - my-otel-demo-adservice in namespace default
+  - my-otel-demo-cartservice in namespace default
+  - my-otel-demo-checkoutservice in namespace default
+  - my-otel-demo-otelcol in namespace default
+  - my-otel-demo-productcatalogservice in namespace default
+  - my-otel-demo-recommendationservice in namespace default
+my-otel-demo-frontendproxy in namespace default calls:
+  - my-otel-demo-featureflagservice in namespace default
+  - my-otel-demo-frontend in namespace default
+  - my-otel-demo-grafana in namespace default
+  - my-otel-demo-jaeger in namespace default
+  - my-otel-demo-loadgenerator in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-kafka in namespace default calls:
+  - my-otel-demo-kafka in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-loadgenerator in namespace default calls:
+  - my-otel-demo-frontend in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-otelcol in namespace default calls:
+  - kube-otel-stack-traces in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-paymentservice in namespace default calls:
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-productcatalogservice in namespace default calls:
+  - my-otel-demo-featureflagservice in namespace default
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-prometheus-server in namespace default calls:
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-quoteservice in namespace default calls:
+  - my-otel-demo-otelcol in namespace default
+my-otel-demo-recommendationservice in namespace default calls:
+  - my-otel-demo-featureflagservice in namespace default
+  - my-otel-demo-otelcol in namespace default
+  - my-otel-demo-productcatalogservice in namespace default
+my-otel-demo-shippingservice in namespace default calls:
+  - my-otel-demo-otelcol in namespace default
+  - my-otel-demo-quoteservice in namespace default
